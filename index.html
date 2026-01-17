@@ -68,7 +68,7 @@
     </div>
   </div>
 
-  <script src="Build/38442bd142124ae8b61ce90c73793abd.loader.js"></script>
+  <script src="Build/faf11e1fb99ff47d0951b77d5c96fe99.loader.js"></script>
   <script>
     const isMobileDevice = navigator.maxTouchPoints > 0 && !!document.createElement('canvas').getContext('webgl')?.getExtension('WEBGL_compressed_texture_etc2');
 
@@ -77,9 +77,9 @@
 
     const settings = {
       arguments: [],
-      dataUrl: "Build/1937dd18f8cb40feb6e0c64352e17993.data.unityweb",
-      frameworkUrl: "Build/835306540730c290f4e0986ca6755f25.framework.js.unityweb",
-      codeUrl: "Build/e36f023a7d36549e1e684ac39e905645.wasm.unityweb",
+      dataUrl: "Build/6ff8aa3e83d7f7739242636374b837aa.data.unityweb",
+      frameworkUrl: "Build/e4285c3d867be655903fcd0e0d3aa62d.framework.js.unityweb",
+      codeUrl: "Build/acc26bd8d626f107a6b498e988de8a05.wasm.unityweb",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "mediatelekim",
       productName: "Ми-мимишки Приключения",
@@ -127,6 +127,297 @@
       alert(errorMessage);
     });
   </script>
+  <script>
+// TV Cursor Manager
+(function() {
+    'use strict';
+    
+    window.TVCursor = {
+        init: function() {
+            this.cursor = {
+                x: window.innerWidth / 2,
+                y: window.innerHeight / 2,
+                visible: true,
+                element: null
+            };
+            
+            this.createCursorElement();
+            this.setupEventHandlers();
+            this.startUpdateLoop();
+            
+            console.log("TV Cursor initialized");
+        },
+        
+        createCursorElement: function() {
+            // Создаем DOM элемент для курсора
+            this.cursor.element = document.createElement('div');
+            this.cursor.element.id = 'tv-cursor';
+            this.cursor.element.style.cssText = `
+                position: fixed;
+                width: 32px;
+                height: 32px;
+                background: url('cursor.png') no-repeat center;
+                background-size: contain;
+                pointer-events: none;
+                z-index: 999999;
+                transform: translate(-50%, -50%);
+                transition: transform 0.1s;
+                display: none;
+            `;
+            
+            document.body.appendChild(this.cursor.element);
+        },
+        
+        setupEventHandlers: function() {
+            // 1. Pointer Events (современные ТВ)
+            if ('PointerEvent' in window) {
+                document.addEventListener('pointermove', this.handlePointerMove.bind(this));
+                document.addEventListener('pointerdown', this.handlePointerDown.bind(this));
+                document.addEventListener('pointerup', this.handlePointerUp.bind(this));
+            }
+            
+            // 2. Gamepad для навигации
+            if ('getGamepads' in navigator) {
+                this.setupGamepadNavigation();
+            }
+            
+            // 3. Keyboard navigation (стрелки)
+            document.addEventListener('keydown', this.handleKeyDown.bind(this));
+            document.addEventListener('keyup', this.handleKeyUp.bind(this));
+            
+            // 4. TV-specific events
+            this.setupTVSpecificEvents();
+            
+            // 5. Resize handling
+            window.addEventListener('resize', this.handleResize.bind(this));
+        },
+        
+        handlePointerMove: function(e) {
+            // Обновляем позицию курсора
+            this.cursor.x = e.clientX;
+            this.cursor.y = e.clientY;
+            this.updateCursorPosition();
+            
+            // Отправляем в Unity
+            this.sendToUnity('CursorMove', {
+                x: this.cursor.x,
+                y: this.cursor.y,
+                type: e.pointerType
+            });
+        },
+        
+        handlePointerDown: function(e) {
+            // Визуальная обратная связь
+            this.cursor.element.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            
+            // Отправляем клик в Unity
+            this.sendToUnity('CursorClick', {
+                x: this.cursor.x,
+                y: this.cursor.y,
+                button: e.button
+            });
+        },
+        
+        handlePointerUp: function(e) {
+            // Возвращаем нормальный размер
+            this.cursor.element.style.transform = 'translate(-50%, -50%) scale(1)';
+        },
+        
+        setupGamepadNavigation: function() {
+            var gamepadState = {
+                axes: [0, 0],
+                buttons: {},
+                active: false
+            };
+            
+            function updateGamepad() {
+                var gamepads = navigator.getGamepads();
+                if (gamepads[0]) {
+                    var gamepad = gamepads[0];
+                    
+                    // Навигация по осям
+                    var speed = 10;
+                    var deadZone = 0.1;
+                    
+                    var axisX = gamepad.axes[0] || 0;
+                    var axisY = gamepad.axes[1] || 0;
+                    
+                    if (Math.abs(axisX) > deadZone) {
+                        this.cursor.x += axisX * speed;
+                    }
+                    if (Math.abs(axisY) > deadZone) {
+                        this.cursor.y += axisY * speed;
+                    }
+                    
+                    // Ограничиваем границы
+                    this.clampCursor();
+                    
+                    // Обновляем позицию
+                    this.updateCursorPosition();
+                    
+                    // Кнопка A (индекс 0) - клик
+                    if (gamepad.buttons[0] && gamepad.buttons[0].pressed) {
+                        this.sendToUnity('GamepadClick', {
+                            x: this.cursor.x,
+                            y: this.cursor.y
+                        });
+                    }
+                    
+                    gamepadState.active = true;
+                } else {
+                    gamepadState.active = false;
+                }
+                
+                requestAnimationFrame(updateGamepad.bind(this));
+            }
+            
+            requestAnimationFrame(updateGamepad.bind(this));
+        },
+        
+        handleKeyDown: function(e) {
+            var speed = 5;
+            var moved = false;
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                    this.cursor.y -= speed;
+                    moved = true;
+                    break;
+                case 'ArrowDown':
+                    this.cursor.y += speed;
+                    moved = true;
+                    break;
+                case 'ArrowLeft':
+                    this.cursor.x -= speed;
+                    moved = true;
+                    break;
+                case 'ArrowRight':
+                    this.cursor.x += speed;
+                    moved = true;
+                    break;
+                case 'Enter':
+                    // Эмуляция клика
+                    this.sendToUnity('KeyboardClick', {
+                        x: this.cursor.x,
+                        y: this.cursor.y
+                    });
+                    break;
+            }
+            
+            if (moved) {
+                this.clampCursor();
+                this.updateCursorPosition();
+                this.sendToUnity('CursorMove', {
+                    x: this.cursor.x,
+                    y: this.cursor.y,
+                    source: 'keyboard'
+                });
+            }
+        },
+        
+        handleKeyUp: function(e) {
+            // Можно добавить обработку отпускания кнопок
+        },
+        
+        setupTVSpecificEvents: function() {
+            var ua = navigator.userAgent.toLowerCase();
+            
+            // Samsung Tizen
+            if (ua.includes('tizen')) {
+                this.setupTizenEvents();
+            }
+            
+            // LG webOS
+            if (ua.includes('webos')) {
+                this.setupWebOSEvents();
+            }
+            
+            // Android TV
+            if (ua.includes('android tv')) {
+                this.setupAndroidTVEvents();
+            }
+        },
+        
+        setupTizenEvents: function() {
+            try {
+                // Tizen TV remote handling
+                tizen.tvinputdevice.registerKey('MediaPlay');
+                tizen.tvinputdevice.registerKey('MediaStop');
+                
+                document.addEventListener('keydown', function(e) {
+                    // Обработка специфичных кнопок Tizen
+                    if (e.key === 'MediaColorF0Red') {
+                        // Красная кнопка
+                    }
+                });
+            } catch(e) {
+                console.log('Tizen events setup failed:', e);
+            }
+        },
+        
+        updateCursorPosition: function() {
+            if (this.cursor.element) {
+                this.cursor.element.style.left = this.cursor.x + 'px';
+                this.cursor.element.style.top = this.cursor.y + 'px';
+                this.cursor.element.style.display = this.cursor.visible ? 'block' : 'none';
+            }
+        },
+        
+        clampCursor: function() {
+            var padding = 20;
+            this.cursor.x = Math.max(padding, Math.min(window.innerWidth - padding, this.cursor.x));
+            this.cursor.y = Math.max(padding, Math.min(window.innerHeight - padding, this.cursor.y));
+        },
+        
+        handleResize: function() {
+            // При изменении размера окна центрируем курсор
+            this.cursor.x = window.innerWidth / 2;
+            this.cursor.y = window.innerHeight / 2;
+            this.updateCursorPosition();
+        },
+        
+        sendToUnity: function(event, data) {
+            if (typeof gameInstance !== 'undefined') {
+                gameInstance.SendMessage('TVCursorManager', event, JSON.stringify(data));
+            }
+        },
+        
+        startUpdateLoop: function() {
+            // Постоянное обновление позиции
+            function update() {
+                this.updateCursorPosition();
+                requestAnimationFrame(update.bind(this));
+            }
+            requestAnimationFrame(update.bind(this));
+        },
+        
+        // Публичные методы
+        showCursor: function() {
+            this.cursor.visible = true;
+        },
+        
+        hideCursor: function() {
+            this.cursor.visible = false;
+        },
+        
+        setCursorPosition: function(x, y) {
+            this.cursor.x = x;
+            this.cursor.y = y;
+            this.clampCursor();
+            this.updateCursorPosition();
+        },
+        
+        getCursorPosition: function() {
+            return { x: this.cursor.x, y: this.cursor.y };
+        }
+    };
+    
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        window.TVCursor.init();
+    });
+})();
+</script>
 </body>
 
 </html>
