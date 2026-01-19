@@ -68,7 +68,7 @@
     </div>
   </div>
 
-  <script src="Build/38442bd142124ae8b61ce90c73793abd.loader.js"></script>
+  <script src="Build/499c303cdf982147ce35c31d1531c715.loader.js"></script>
   <script>
     const isMobileDevice = navigator.maxTouchPoints > 0 && !!document.createElement('canvas').getContext('webgl')?.getExtension('WEBGL_compressed_texture_etc2');
 
@@ -77,9 +77,9 @@
 
     const settings = {
       arguments: [],
-      dataUrl: "Build/d8aad843ee526caeb4059fb6a3d61e71.data.unityweb",
-      frameworkUrl: "Build/835306540730c290f4e0986ca6755f25.framework.js.unityweb",
-      codeUrl: "Build/e36f023a7d36549e1e684ac39e905645.wasm.unityweb",
+      dataUrl: "Build/b469b6971e39dc8b76dea648d724019f.data.unityweb",
+      frameworkUrl: "Build/694ffa5fd24f2865fa8ea2fc462b4103.framework.js.unityweb",
+      codeUrl: "Build/ee4f48d42c075dc0948f06beb0247f76.wasm.unityweb",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "mediatelekim",
       productName: "Ми-мимишки Приключения",
@@ -126,44 +126,6 @@
       console.error(errorMessage);
       alert(errorMessage);
     });
-    
-    mergeInto(LibraryManager.library, {
-    GetCursorPositionX: function () {
-        return (typeof window !== 'undefined' && window.event) ? 
-            window.event.clientX : 0;
-    },
-    
-    GetCursorPositionY: function () {
-        return (typeof window !== 'undefined' && window.event) ? 
-            window.event.clientY : 0;
-    },
-    
-    SetupCursorTracking: function () {
-        if (typeof window !== 'undefined') {
-            window.addEventListener('mousemove', function(e) {
-                window.lastMouseX = e.clientX;
-                window.lastMouseY = e.clientY;
-                window.mouseMoved = true;
-            });
-            
-            window.addEventListener('touchmove', function(e) {
-                if (e.touches.length > 0) {
-                    window.lastMouseX = e.touches[0].clientX;
-                    window.lastMouseY = e.touches[0].clientY;
-                    window.mouseMoved = true;
-                }
-            }, { passive: true });
-        }
-    },
-    
-    GetCursorPositionFromJS: function () {
-        if (typeof window !== 'undefined' && window.lastMouseX !== undefined) {
-            // Возвращаем координаты как одно число (можно разделить в C#)
-            return (window.lastMouseX << 16) | window.lastMouseY;
-        }
-        return 0;
-    }
-});
   </script>
 </body>
 
