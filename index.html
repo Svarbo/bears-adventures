@@ -68,18 +68,18 @@
     </div>
   </div>
 
-  <script src="Build/77972b45333e53cd5fc0e139fc7503b7.loader.js"></script>
+  <script src="Build/d30363b8d98f12628f85744b4bb43d82.loader.js"></script>
   <script>
     const isMobileDevice = navigator.maxTouchPoints > 0 && !!document.createElement('canvas').getContext('webgl')?.getExtension('WEBGL_compressed_texture_etc2');
 
-    const desktopPixelCount = 700000;
-    const mobilePixelCount = 700000;
+    const desktopPixelCount = 3686400;
+    const mobilePixelCount = 921600;
 
     const settings = {
       arguments: [],
-      dataUrl: "Build/f8a1d2faeda0864b678dee594bcf92eb.data.unityweb",
-      frameworkUrl: "Build/28eb5a3bda5dac2ca45814ae23934ad3.framework.js.unityweb",
-      codeUrl: "Build/b04f0a0a463285c1070a1e687b81ef17.wasm.unityweb",
+      dataUrl: "Build/da988356a1f8697f3b8c1de04d81c8db.data.unityweb",
+      frameworkUrl: "Build/1cf02a2fb86afe34b0a3f4ebacd21cb3.framework.js.unityweb",
+      codeUrl: "Build/069b373753e2c51c833bdb88bcc0d25a.wasm.unityweb",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "mediatelekim",
       productName: "Ми-мимишки Приключения",
@@ -127,42 +127,6 @@
       alert(errorMessage);
     });
   </script>
-  <script>
-// Отключаем навигацию TV-браузера для canvas
-window.addEventListener('DOMContentLoaded', () => {
-    const canvas = document.getElementById('canvas');
-    
-    // Блокируем стандартную навигацию браузера
-    canvas.addEventListener('keydown', (e) => {
-        const tvKeys = [37, 38, 39, 40, 13, 27, 8]; // Стрелки, Enter, Esc, Back
-        if (tvKeys.includes(e.keyCode)) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            return false;
-        }
-    }, true); // true = useCapture phase
-    
-    canvas.addEventListener('keyup', (e) => {
-        const tvKeys = [37, 38, 39, 40, 13, 27, 8];
-        if (tvKeys.includes(e.keyCode)) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            return false;
-        }
-    }, true);
-    
-    // Фокус и предотвращение всплытия событий
-    canvas.setAttribute('tabindex', '0');
-    canvas.style.outline = 'none';
-    canvas.focus();
-    
-    // Возвращаем фокус при клике/касании
-    document.addEventListener('click', () => canvas.focus());
-    document.addEventListener('touchstart', () => canvas.focus());
-});
-</script>
 </body>
 
 </html>
