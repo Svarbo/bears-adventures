@@ -127,6 +127,42 @@
       alert(errorMessage);
     });
   </script>
+  <script>
+// Отключаем навигацию TV-браузера для canvas
+window.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('canvas');
+    
+    // Блокируем стандартную навигацию браузера
+    canvas.addEventListener('keydown', (e) => {
+        const tvKeys = [37, 38, 39, 40, 13, 27, 8]; // Стрелки, Enter, Esc, Back
+        if (tvKeys.includes(e.keyCode)) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
+        }
+    }, true); // true = useCapture phase
+    
+    canvas.addEventListener('keyup', (e) => {
+        const tvKeys = [37, 38, 39, 40, 13, 27, 8];
+        if (tvKeys.includes(e.keyCode)) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
+        }
+    }, true);
+    
+    // Фокус и предотвращение всплытия событий
+    canvas.setAttribute('tabindex', '0');
+    canvas.style.outline = 'none';
+    canvas.focus();
+    
+    // Возвращаем фокус при клике/касании
+    document.addEventListener('click', () => canvas.focus());
+    document.addEventListener('touchstart', () => canvas.focus());
+});
+</script>
 </body>
 
 </html>
